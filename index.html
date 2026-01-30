@@ -391,17 +391,7 @@
     const ctx = canvas.getContext("2d");
     const tooltip = document.getElementById("tooltip");
 
-    let dpr = window.devicePixelRatio || 1;
 
-    function resize() {
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = window.innerWidth + "px";
-      canvas.style.height = window.innerHeight + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    window.addEventListener("resize", resize);
-    resize();
 
     const center = {
       x: window.innerWidth / 2,
@@ -505,6 +495,39 @@
         )
       );
     });
+    let dpr = window.devicePixelRatio || 1;
+    let fitScale = 1;
+
+    function updateFitScale() {
+      const bounds = getWorldBounds();
+
+      const padding = 40; // breathing space
+      const sx = (window.innerWidth - padding) / bounds.width;
+      const sy = (window.innerHeight - padding) / bounds.height;
+
+      fitScale = Math.min(sx, sy, 1); // never upscale
+    }
+
+        function resize() {
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          canvas.style.width = window.innerWidth + "px";
+          canvas.style.height = window.innerHeight + "px";
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+    window.addEventListener("resize", () => {
+      resize();
+      updateFitScale();
+    });
+    updateFitScale();
+    resize();
+
+function screenToWorld(mx, my) {
+  return {
+    x: (mx - camera.offsetX) / camera.scale,
+    y: (my - camera.offsetY) / camera.scale
+  };
+}
 
     /* =======================
        MOUSE INTERACTION
@@ -555,15 +578,62 @@
       }
     }
 
+function getWorldBounds() {
+  let minX = Infinity, minY = Infinity;
+  let maxX = -Infinity, maxY = -Infinity;
+
+  bubbles.forEach(b => {
+    minX = Math.min(minX, b.x - b.r);
+    minY = Math.min(minY, b.y - b.r);
+    maxX = Math.max(maxX, b.x + b.r);
+    maxY = Math.max(maxY, b.y + b.r);
+  });
+
+  return {
+    width: maxX - minX,
+    height: maxY - minY,
+    minX,
+    minY
+  };
+}
+let camera = {
+  scale: fitScale,   // or zoom * fitScale
+  offsetX: 0,
+  offsetY: 0
+};
 
     function animate() {
+      ctx.save();
+
+      // reset → clear
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // center + scale world
+      const bounds = getWorldBounds();
+      const wx = bounds.minX + bounds.width / 2;
+      const wy = bounds.minY + bounds.height / 2;
+      camera.scale = fitScale;
+      camera.offsetX = canvas.width / 2 / dpr - wx * fitScale;
+      camera.offsetY = canvas.height / 2 / dpr - wy * fitScale;
+      ctx.setTransform(
+        camera.scale * dpr,
+        0,
+        0,
+        camera.scale * dpr,
+        camera.offsetX * dpr,
+        camera.offsetY * dpr
+      );
+
 
       hovered = null;
 
+      const worldMouse = screenToWorld(mouse.x, mouse.y);
+
       for (const b of bubbles) {
-        const dx = mouse.x - b.x;
-        const dy = mouse.y - b.y;
+        const dx = worldMouse.x - b.x;
+        const dy = worldMouse.y - b.y;
+
         if (Math.hypot(dx, dy) < b.r) {
           hovered = b;
           break;
