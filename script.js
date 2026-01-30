@@ -486,7 +486,8 @@ function updateCamera() {
     camera.offsetY =
         canvas.height / 2 / dpr - wy * camera.scale;
 }
-
+const tooltipName = document.getElementById("tooltip-name");
+const tooltipCount = document.getElementById("tooltip-count");
 function animate() {
     ctx.save();
 
@@ -519,24 +520,7 @@ function animate() {
             break;
         }
     }
-    if (hovered) {
-        // ADD THIS LINE: Change cursor to pointer
-        canvas.style.cursor = "pointer"; 
 
-        tooltip.innerHTML = `
-        <strong>${hovered.data.name}</strong>
-        <div>Rejections: ${hovered.data.rejections}</div>
-        <div class="status">still trying...</div>
-    `;
-        tooltip.style.left = mouse.x + 15 + "px";
-        tooltip.style.top = mouse.y + 15 + "px";
-        tooltip.classList.add("visible");
-    } else {
-        // ADD THIS LINE: Reset cursor to default
-        canvas.style.cursor = "default"; 
-
-        tooltip.classList.remove("visible");
-    }
     // 🔥 collision pass (IMPORTANT)
     resolveCollisions(bubbles);
 
@@ -566,15 +550,20 @@ function animate() {
 
     // tooltip
     if (hovered) {
-        tooltip.innerHTML = `
-        <strong>${hovered.data.name}</strong>
-        <div>Rejections: ${hovered.data.rejections}</div>
-        <div class="status">still trying...</div>
-    `;
+        // ADD THIS LINE: Change cursor to pointer
+        canvas.style.cursor = "pointer"; 
+
+        if (tooltipName.textContent !== hovered.data.name) {
+            tooltipName.textContent = hovered.data.name;
+            tooltipCount.textContent = hovered.data.rejections;
+        }
         tooltip.style.left = mouse.x + 15 + "px";
         tooltip.style.top = mouse.y + 15 + "px";
         tooltip.classList.add("visible");
     } else {
+        // ADD THIS LINE: Reset cursor to default
+        canvas.style.cursor = "default"; 
+
         tooltip.classList.remove("visible");
     }
 
