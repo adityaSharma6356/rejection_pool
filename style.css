@@ -1,0 +1,141 @@
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+        overflow: hidden;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .status {
+        font-size: 12px;
+        opacity: 0.7;
+        margin-top: 4px;
+        font-style: italic;
+    }
+
+    canvas {
+        display: block;
+    }
+
+    #tooltip {
+        position: fixed;
+        pointer-events: none;
+        background: rgba(22, 30, 51, 0.95);
+        color: #ffffff;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        line-height: 1.4;
+        opacity: 0;
+        transform: translateY(5px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        white-space: nowrap;
+    }
+
+    #tooltip.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    #dashboard {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        background: rgba(10, 20, 40, 0.6);
+        backdrop-filter: blur(10px);
+        border-radius: 14px;
+        padding: 16px 18px;
+        color: #eaf0ff;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        min-width: 180px;
+    }
+
+    .stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .stat:last-child {
+        margin-bottom: 0;
+    }
+
+    .label {
+        font-size: 12px;
+        opacity: 0.75;
+        letter-spacing: 0.04em;
+    }
+
+    .value {
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .stat.subtle .value {
+        font-size: 16px;
+        opacity: 0.85;
+    }
+
+    #caption {
+        font-size: 13px;
+        opacity: 0.85;
+    }
+
+    #top-rejections {
+        position: fixed;
+        left: 20px;
+        top: 20px;
+        width: 220px;
+        background: rgba(10, 15, 30, 0.65);
+        backdrop-filter: blur(8px);
+        border-radius: 14px;
+        padding: 14px;
+        color: #cdd9ff;
+        font-family: system-ui, sans-serif;
+    }
+
+    #top-rejections h3 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        opacity: 0.8;
+    }
+
+    #top-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .top-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 4px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .top-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .top-item img {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+    }
+
+    .top-item span {
+        flex: 1;
+        font-size: 13px;
+    }
+
+    .top-item strong {
+        font-size: 13px;
+        opacity: 0.9;
+    }
