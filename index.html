@@ -90,6 +90,62 @@
       font-size: 13px;
       opacity: 0.85;
     }
+
+    #top-rejections {
+      position: fixed;
+      left: 20px;
+      top: 20px;
+      width: 220px;
+      background: rgba(10, 15, 30, 0.65);
+      backdrop-filter: blur(8px);
+      border-radius: 14px;
+      padding: 14px;
+      color: #cdd9ff;
+      font-family: system-ui, sans-serif;
+    }
+
+    #top-rejections h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      opacity: 0.8;
+    }
+
+    #top-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .top-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .top-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .top-item img {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+    }
+
+    .top-item span {
+      flex: 1;
+      font-size: 13px;
+    }
+
+    .top-item strong {
+      font-size: 13px;
+      opacity: 0.9;
+    }
   </style>
 </head>
 
@@ -112,6 +168,10 @@
       <span class="value" id="rate">0%</span>
     </div>
     <div id="caption">Every “no” counted.</div>
+  </div>
+  <div id="top-rejections">
+    <h3>Top Rejections 💀</h3>
+    <ul id="top-list"></ul>
   </div>
 
   <canvas id="canvas"></canvas>
@@ -275,6 +335,39 @@
       { name: "SetupmyHR", rejections: 2, logo: "logos/setupmyhr.png" },
       { name: "Quantum4U Lab Pvt Ltd", rejections: 2, logo: "logos/quantum4u_lab_pvt_ltd.png" },
     ];
+    const topList = document.getElementById("top-list");
+
+    function renderTopRejections() {
+      topList.innerHTML = "";
+
+      const top5 = [...companies]
+        .sort((a, b) => b.rejections - a.rejections)
+        .slice(0, 5);
+
+      top5.forEach((c, index) => {
+        const li = document.createElement("li");
+        li.className = "top-item";
+
+        li.innerHTML = `
+      <img src="${c.logo}" alt="">
+      <span>${index + 1}. ${c.name}</span>
+      <strong>${c.rejections}</strong>
+    `;
+
+        // Hover interaction with bubble
+        li.addEventListener("mouseenter", () => {
+          c._highlight = true;
+        });
+
+        li.addEventListener("mouseleave", () => {
+          c._highlight = false;
+        });
+
+        topList.appendChild(li);
+      });
+    }
+
+    renderTopRejections();
 
     const totalCompanies = companies.length;
     const totalRejections = companies.reduce((s, c) => s + c.rejections, 0);
@@ -372,6 +465,11 @@
         ctx.arc(this.x, this.y, this.r - 6, 0, Math.PI * 2);
         ctx.clip();
 
+        if (this.data._highlight) {
+          ctx.lineWidth = 10;
+          ctx.strokeStyle = "rgba(120, 160, 255, 0.9)";
+          ctx.stroke();
+        }
         if (this.img.complete) {
           ctx.drawImage(
             this.img,
