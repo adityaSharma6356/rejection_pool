@@ -155,39 +155,7 @@ const companies = [
     { name: "SetupmyHR", rejections: 2, logo: "logos/setupmyhr.png", url: "https://setupmyhr.com/" },
     { name: "Quantum4U Lab Pvt Ltd", rejections: 2, logo: "logos/quantum4u_lab_pvt_ltd.png", url: "https://quantum4u.in/" }
 ];
-const topList = document.getElementById("top-list");
 
-function renderTopRejections() {
-    topList.innerHTML = "";
-
-    const top5 = [...companies]
-        .sort((a, b) => b.rejections - a.rejections)
-        .slice(0, 5);
-
-    top5.forEach((c, index) => {
-        const li = document.createElement("li");
-        li.className = "top-item";
-
-        li.innerHTML = `
-      <img src="${c.logo}" alt="">
-      <span>${index + 1}. ${c.name}</span>
-      <strong>${c.rejections}</strong>
-    `;
-
-        // Hover interaction with bubble
-        li.addEventListener("mouseenter", () => {
-            c._highlight = true;
-        });
-
-        li.addEventListener("mouseleave", () => {
-            c._highlight = false;
-        });
-
-        topList.appendChild(li);
-    });
-}
-
-renderTopRejections();
 
 const totalCompanies = companies.length;
 const totalRejections = companies.reduce((s, c) => s + c.rejections, 0);
@@ -275,10 +243,16 @@ class Bubble {
         ctx.arc(this.x, this.y, this.r - 6, 0, Math.PI * 2);
         ctx.clip();
 
+    // 1. Draw a massive glow if highlighted
         if (this.data._highlight) {
-            ctx.lineWidth = 10;
-            ctx.strokeStyle = "rgba(120, 160, 255, 0.9)";
-            ctx.stroke();
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r + 15, 0, Math.PI * 2);
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = "rgba(120, 160, 255, 1)";
+            ctx.fillStyle = "rgba(120, 160, 255, 0.3)";
+            ctx.fill();
+            ctx.restore();
         }
         if (this.img.complete) {
             ctx.drawImage(
@@ -331,7 +305,44 @@ companies.forEach((c, i) => {
         )
     );
 });
+const topList = document.getElementById("top-list");
 
+function renderTopRejections() {
+    topList.innerHTML = "";
+
+    const top5 = [...companies]
+        .sort((a, b) => b.rejections - a.rejections)
+        .slice(0, 5);
+
+    top5.forEach((c, index) => {
+        const li = document.createElement("li");
+        li.className = "top-item";
+
+        li.innerHTML = `
+            <img src="${c.logo}" alt="">
+            <span>${index + 1}. ${c.name}</span>
+            <strong>${c.rejections}</strong>
+        `;
+
+        // HIGH-INTENSITY HIGHLIGHTING
+        li.addEventListener("mouseenter", () => {
+            c._highlight = true;
+            // Force the bubble to grow and glow via the Bubble class logic
+        });
+
+        li.addEventListener("mouseleave", () => {
+            c._highlight = false;
+        });
+        
+        li.addEventListener("click", () => {
+            if (c.url) window.open(c.url, '_blank');
+        });
+
+        topList.appendChild(li);
+    });
+}
+
+renderTopRejections();
 let dpr = window.devicePixelRatio || 1;
 let fitScale = 1;
 
@@ -373,9 +384,38 @@ function screenToWorld(mx, my) {
 /* =======================
    MOUSE INTERACTION
 ======================= */
-const mouse = { x: 0, y: 0 };
+const mouse = { 
+    x: 0, 
+    y: 0, 
+    isDown: false, 
+    dragged: null,
+    offset: { x: 0, y: 0 } 
+};
 let hovered = null;
+let dragStartTime = 0;
+canvas.addEventListener("mousedown", e => {
+    dragStartTime = Date.now();
+    mouse.isDown = true;
+    const worldPos = screenToWorld(e.clientX, e.clientY);
 
+    // Find if we clicked on a bubble
+    for (const b of bubbles) {
+        const dx = worldPos.x - b.x;
+        const dy = worldPos.y - b.y;
+        if (Math.hypot(dx, dy) < b.r) {
+            mouse.dragged = b;
+            // Store offset so bubble doesn't "jump" to cursor center
+            mouse.offset.x = worldPos.x - b.x;
+            mouse.offset.y = worldPos.y - b.y;
+            break;
+        }
+    }
+});
+
+window.addEventListener("mouseup", () => {
+    mouse.isDown = false;
+    mouse.dragged = null;
+});
 canvas.addEventListener("mousemove", e => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
@@ -390,6 +430,7 @@ canvas.addEventListener("mouseleave", () => {
    CLICK LOGIC
 ======================= */
 canvas.addEventListener("click", (e) => {
+    if (Date.now() - dragStartTime > 200) return;
     // 1. Convert screen click coordinates to world coordinates
     const clickPos = screenToWorld(e.clientX, e.clientY);
 
@@ -432,10 +473,10 @@ function resolveCollisions(bubbles) {
             const dy = b.y - a.y;
             const dist = Math.hypot(dx, dy);
 
-            const minDist = a.r + b.r + 6; // small padding
+            const minDist = a.r + b.r + 10; // small padding
 
             if (dist < minDist && dist > 0.0001) {
-                const overlap = (minDist - dist) * 0.5;
+                const overlap = (minDist - dist) * 0.6;
                 const nx = dx / dist;
                 const ny = dy / dist;
 
@@ -527,9 +568,24 @@ function animate() {
 
 
     bubbles.forEach(b => {
-        b.frozen = (b === hovered);
-        b.targetR = b === hovered ? b.baseR * 1.3 : b.baseR;
 
+        if (mouse.dragged === b) {
+            const worldMouse = screenToWorld(mouse.x, mouse.y);
+            b.x = worldMouse.x - mouse.offset.x;
+            b.y = worldMouse.y - mouse.offset.y;
+            b.vx = 0; // Stop physical forces while dragging
+            b.vy = 0;
+        }
+
+        const isInteracting = (b === hovered || b.data._highlight);
+        b.frozen = isInteracting;
+        if (b.data._highlight) {
+            b.targetR = b.baseR * 1.8;
+        } else if (b === hovered) {
+            b.targetR = b.baseR * 1.3;
+        } else {
+            b.targetR = b.baseR;
+        }
         // neighbor push
         if (hovered && b !== hovered) {
             const dx = b.x - hovered.x;

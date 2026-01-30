@@ -135,24 +135,30 @@
         margin: 0;
     }
 
+    /* Update your .top-item class or add these styles */
     .top-item {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 6px 4px;
+        padding: 10px;
+        margin: 5px 0;
         border-radius: 8px;
+        transition: all 0.3s ease;
         cursor: pointer;
-        transition: background 0.2s;
+        border-left: 3px solid transparent;
     }
 
     .top-item:hover {
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(120, 160, 255, 0.15); /* Light blue tint */
+        border-left: 3px solid #78a0ff; /* Bright accent bar */
+        transform: translateX(5px); /* Slight slide-in effect */
     }
 
     .top-item img {
-        width: 26px;
-        height: 26px;
-        border-radius: 6px;
+        width: 30px;
+        height: 30px;
+        margin-right: 12px;
+        border-radius: 4px;
+        background: white; /* Ensures logos are visible against dark bg */
     }
 
     .top-item span {
