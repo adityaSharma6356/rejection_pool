@@ -8,7 +8,7 @@ const companies = [
     { name: "Kape", rejections: 1, logo: "logos/kape.png", url: "https://www.kape.com/" },
     { name: "konrad", rejections: 4, logo: "logos/konrad.png", url: "https://www.konrad.com/" },
     { name: "Ryan-Miranda Partners", rejections: 2, logo: "logos/ryan_miranda.png", url: "https://www.linkedin.com/company/ryan-miranda-partners" },
-    { name: "Meesho", rejections: 3, logo: "logos/meesho.png", url: "https://www.meesho.io/jobs" },
+    { name: "Meesho", rejections: 4, logo: "logos/meesho.png", url: "https://www.meesho.io/jobs" },
     { name: "Cavista Technologies", rejections: 2, logo: "logos/cavista_technologies.png", url: "https://www.cavistatech.com/" },
     { name: "Mintegral", rejections: 2, logo: "logos/mintegral.png", url: "https://www.mintegral.com/" },
     { name: "Zorvyn", rejections: 4, logo: "logos/zorvyn.png", url: "https://zorvyn.com/" },
