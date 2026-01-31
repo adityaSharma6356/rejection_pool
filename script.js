@@ -79,7 +79,7 @@ const companies = [
     { name: "Kapitalwise Inc.", rejections: 2, logo: "logos/kapitalwise_inc..png", url: "https://kapitalwise.com/" },
     { name: "MyRemoteTeam Inc", rejections: 4, logo: "logos/myremoteteam_inc.png", url: "https://myremoteteam.com/" },
     { name: "Zeev", rejections: 2, logo: "logos/zeev.png", url: "https://zeev.co/" },
-    { name: "Rapido", rejections: 2, logo: "logos/rapido.png", url: "https://rapido.bike/careers" },
+    { name: "Rapido", rejections: 2, logo: "logos/rapido.png", url: "https://rapido.bike/Careers" },
     { name: "Janitri", rejections: 2, logo: "logos/janitri.png", url: "https://janitri.in/" },
     { name: "Jase HR Solutions", rejections: 2, logo: "logos/jase_hr_solutions.png", url: "https://jasehr.com/" },
     { name: "PPStack", rejections: 2, logo: "logos/ppstack.png", url: "https://ppstack.com/" },
