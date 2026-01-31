@@ -557,7 +557,7 @@ function animate() {
         const dx = worldMouse.x - b.x;
         const dy = worldMouse.y - b.y;
 
-        if (Math.hypot(dx, dy) < b.r) {
+        if (mouse.dragged==null && Math.hypot(dx, dy) < b.r) {
             hovered = b;
             break;
         }
