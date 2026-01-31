@@ -1,6 +1,3 @@
-/* =======================
-   DATA (edit freely)
-======================= */
 const companies = [
     { name: "Google", rejections: 8, logo: "logos/google.png", url: "https://careers.google.com/" },
     { name: "Amazon", rejections: 6, logo: "logos/amazon.png", url: "https://www.amazon.jobs/" },
@@ -202,9 +199,7 @@ const companies = [
 const totalCompanies = companies.length;
 const totalRejections = companies.reduce((s, c) => s + c.rejections, 0);
 
-// for now: assume 1 application = 1 rejection + pending
-// you can replace this later
-const totalApplications = totalRejections; // 👈 tweak manually if needed
+const totalApplications = totalRejections; 
 
 const rejectionRate = 100;
 
@@ -214,9 +209,6 @@ document.getElementById("companies").textContent = totalCompanies;
 document.getElementById("rate").textContent = rejectionRate + "%";
 
 
-/* =======================
-   CANVAS SETUP
-======================= */
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const tooltip = document.getElementById("tooltip");
@@ -228,9 +220,7 @@ const center = {
     y: window.innerHeight / 2
 };
 
-/* =======================
-   BUBBLE CLASS
-======================= */
+
 class Bubble {
     constructor(x, y, r, data, img) {
         this.x = x;
@@ -246,10 +236,9 @@ class Bubble {
     }
 
     update() {
-        // smooth radius animation
+        
         this.r += (this.targetR - this.r) * 0.15;
         if (this.frozen) return;
-        // gentle pull toward center
         this.vx += (center.x - this.x) * 0.0004;
         this.vy += (center.y - this.y) * 0.0004;
 
@@ -273,19 +262,16 @@ class Bubble {
         ctx.fillStyle = "rgba(9, 26, 50,1)";
         ctx.fill();
 
-        // bubble
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
         ctx.fillStyle = "#ffffff";
         ctx.fill();
 
-        // clip logo
         ctx.save();
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.r - 6, 0, Math.PI * 2);
         ctx.clip();
 
-    // 1. Draw a massive glow if highlighted
         if (this.data._highlight) {
             ctx.save();
             ctx.beginPath();
@@ -309,23 +295,18 @@ class Bubble {
     }
 }
 
-/* =======================
-   CREATE BUBBLES
-======================= */
 const bubbles = [];
 
-// First, compute min & max rejections
 const rejectionsList = companies.map(c => c.rejections);
 const MIN_REJ = Math.min(...rejectionsList);
 const MAX_REJ = Math.max(...rejectionsList);
 
-// Scaling function
 function rejectionToRadius(rej) {
-    const MIN_R = 22; // smallest bubble
-    const MAX_R = 70; // largest bubble
+    const MIN_R = 22;
+    const MAX_R = 70;
     if (MAX_REJ === MIN_REJ) return (MIN_R + MAX_R) / 2;
-    const t = (rej - MIN_REJ) / (MAX_REJ - MIN_REJ); // normalize 0 → 1
-    const eased = Math.sqrt(t); // perceptual easing
+    const t = (rej - MIN_REJ) / (MAX_REJ - MIN_REJ); 
+    const eased = Math.sqrt(t);
     return MIN_R + eased * (MAX_R - MIN_R);
 }
 
@@ -335,7 +316,7 @@ companies.forEach((c, i) => {
     const img = new Image();
     img.src = c.logo;
 
-    const radius = rejectionToRadius(c.rejections); // compute radius based on rejections
+    const radius = rejectionToRadius(c.rejections); 
 
     bubbles.push(
         new Bubble(
@@ -366,10 +347,8 @@ function renderTopRejections() {
             <strong>${c.rejections}</strong>
         `;
 
-        // HIGH-INTENSITY HIGHLIGHTING
         li.addEventListener("mouseenter", () => {
             c._highlight = true;
-            // Force the bubble to grow and glow via the Bubble class logic
         });
 
         li.addEventListener("mouseleave", () => {
@@ -389,7 +368,7 @@ let dpr = window.devicePixelRatio || 1;
 let fitScale = 1;
 
 let camera = {
-    scale: fitScale,   // or zoom * fitScale
+    scale: fitScale,   
     offsetX: 0,
     offsetY: 0
 };
@@ -397,11 +376,11 @@ let camera = {
 function updateFitScale() {
     const bounds = getWorldBounds();
 
-    const padding = 40; // breathing space
+    const padding = 40; 
     const sx = (window.innerWidth - padding) / bounds.width;
     const sy = (window.innerHeight - padding) / bounds.height;
 
-    fitScale = Math.min(sx, sy, 1); // never upscale
+    fitScale = Math.min(sx, sy, 1); 
 }
 
 function resize() {
@@ -423,9 +402,6 @@ function screenToWorld(mx, my) {
     };
 }
 
-/* =======================
-   MOUSE INTERACTION
-======================= */
 const mouse = { 
     x: 0, 
     y: 0, 
@@ -440,13 +416,11 @@ canvas.addEventListener("mousedown", e => {
     mouse.isDown = true;
     const worldPos = screenToWorld(e.clientX, e.clientY);
 
-    // Find if we clicked on a bubble
     for (const b of bubbles) {
         const dx = worldPos.x - b.x;
         const dy = worldPos.y - b.y;
         if (Math.hypot(dx, dy) < b.r) {
             mouse.dragged = b;
-            // Store offset so bubble doesn't "jump" to cursor center
             mouse.offset.x = worldPos.x - b.x;
             mouse.offset.y = worldPos.y - b.y;
             break;
@@ -468,40 +442,28 @@ canvas.addEventListener("mouseleave", () => {
     tooltip.classList.remove("visible");
 });
 
-/* =======================
-   CLICK LOGIC
-======================= */
+
 canvas.addEventListener("click", (e) => {
     if (Date.now() - dragStartTime > 200) return;
-    // 1. Convert screen click coordinates to world coordinates
     const clickPos = screenToWorld(e.clientX, e.clientY);
 
-    // 2. Check if the click hit any bubble
     for (const b of bubbles) {
         const dx = clickPos.x - b.x;
         const dy = clickPos.y - b.y;
 
-        // Check distance against radius
         if (Math.hypot(dx, dy) < b.r) {
             
-            // 3. Navigate if a URL exists
             if (b.data.url) {
-                // Use '_blank' for new tab, or '_self' for same tab
                 window.open(b.data.url, '_blank'); 
             } else {
                 console.log(`No URL found for ${b.data.name}`);
             }
             
-            // Stop checking once we hit the top-most bubble
             break; 
         }
     }
 });
 
-
-/* =======================
-   ANIMATION LOOP
-======================= */
 
 function resolveCollisions(bubbles) {
     for (let i = 0; i < bubbles.length; i++) {
@@ -515,14 +477,13 @@ function resolveCollisions(bubbles) {
             const dy = b.y - a.y;
             const dist = Math.hypot(dx, dy);
 
-            const minDist = a.r + b.r + 10; // small padding
+            const minDist = a.r + b.r + 10;
 
             if (dist < minDist && dist > 0.0001) {
                 const overlap = (minDist - dist) * 0.6;
                 const nx = dx / dist;
                 const ny = dy / dist;
 
-                // push apart
                 a.x -= nx * overlap;
                 a.y -= ny * overlap;
                 b.x += nx * overlap;
@@ -574,10 +535,8 @@ const tooltipCount = document.getElementById("tooltip-count");
 function animate() {
     ctx.save();
 
-    // reset → clear
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // center + scale world
     updateFitScale();
     updateCamera();
     ctx.setTransform(
@@ -604,7 +563,6 @@ function animate() {
         }
     }
 
-    // 🔥 collision pass (IMPORTANT)
     resolveCollisions(bubbles);
 
 
@@ -615,7 +573,7 @@ function animate() {
             const worldMouse = screenToWorld(mouse.x, mouse.y);
             b.x = worldMouse.x - mouse.offset.x;
             b.y = worldMouse.y - mouse.offset.y;
-            b.vx = 0; // Stop physical forces while dragging
+            b.vx = 0; 
             b.vy = 0;
         }
 
@@ -628,7 +586,6 @@ function animate() {
         } else {
             b.targetR = b.baseR;
         }
-        // neighbor push
         if (hovered && b !== hovered) {
             const dx = b.x - hovered.x;
             const dy = b.y - hovered.y;
@@ -646,9 +603,7 @@ function animate() {
         b.draw();
     });
 
-    // tooltip
     if (hovered) {
-        // ADD THIS LINE: Change cursor to pointer
         canvas.style.cursor = "pointer"; 
 
         if (tooltipName.textContent !== hovered.data.name) {
@@ -659,7 +614,6 @@ function animate() {
         tooltip.style.top = mouse.y + 15 + "px";
         tooltip.classList.add("visible");
     } else {
-        // ADD THIS LINE: Reset cursor to default
         canvas.style.cursor = "default"; 
 
         tooltip.classList.remove("visible");
